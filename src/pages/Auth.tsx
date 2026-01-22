@@ -184,7 +184,7 @@ const Auth = () => {
           </h1>
           <p className="text-muted-foreground mt-1">
             {isLogin
-              ? "Sign in to continue to HomeMatch"
+              ? "Sign in to continue to Fidii"
               : selectedRole === "agent" 
                 ? "Create your agent account to manage listings"
                 : "Create your student account to find housing"}
