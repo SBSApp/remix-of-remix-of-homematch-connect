@@ -12,9 +12,9 @@ const Welcome = () => {
           <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-lg">
             <Building className="w-10 h-10 text-primary-foreground" />
           </div>
-          <h1 className="text-5xl font-bold text-foreground mb-4">HomeMatch</h1>
+          <h1 className="text-5xl font-bold text-foreground mb-4">Fidii</h1>
           <p className="text-xl text-muted-foreground mb-8">
-            The easiest way to find your perfect student accommodation
+            Finding leads and listings made easy for all
           </p>
           <div className="flex items-center justify-center gap-8 text-muted-foreground">
             <div className="text-center">
@@ -38,13 +38,13 @@ const Welcome = () => {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <h1 className="text-4xl font-bold text-primary">HomeMatch</h1>
-            <p className="text-muted-foreground mt-2">Find your perfect home</p>
+            <h1 className="text-4xl font-bold text-primary">Fidii</h1>
+            <p className="text-muted-foreground mt-2">Finding leads and listings made easy for all</p>
           </div>
 
           <div className="bg-card rounded-2xl shadow-elevated p-8">
             <h2 className="text-2xl font-semibold text-card-foreground mb-2 text-center">
-              Welcome!
+              Welcome to Fidii!
             </h2>
             <p className="text-muted-foreground mb-8 text-center">
               Choose how you'd like to use HomeMatch

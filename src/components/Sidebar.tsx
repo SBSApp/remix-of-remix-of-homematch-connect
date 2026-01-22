@@ -37,7 +37,7 @@ const Sidebar = ({ userType }: SidebarProps) => {
           className="text-2xl font-bold text-primary cursor-pointer"
           onClick={() => navigate("/")}
         >
-          HomeMatch
+          Fidii
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           {userType === "student" ? "Find your home" : "Manage properties"}
