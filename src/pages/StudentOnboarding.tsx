@@ -6,15 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowRight, Upload, Check, X, Loader2, Camera, User } from "lucide-react";
-
-const DOCUMENT_TYPES = [
-  { id: "passport", label: "Passport" },
-  { id: "residence_permit", label: "Residence Permit" },
-  { id: "financial_proof", label: "Financial Proof" },
-  { id: "rent_payment_history", label: "Rent Payment History" },
-  { id: "recommendation_letter", label: "Recommendation Letter" },
-];
+import { ArrowRight, Loader2, Camera, User } from "lucide-react";
 
 const LANGUAGE_OPTIONS = [
   "English",
@@ -45,7 +37,6 @@ const StudentOnboarding = () => {
   const [bio, setBio] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
-  const [uploadedDocs, setUploadedDocs] = useState<Record<string, { file: File; uploading: boolean; uploaded: boolean }>>({});
   
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
@@ -84,67 +75,6 @@ const StudentOnboarding = () => {
     );
   };
 
-  const handleFileSelect = (docType: string, file: File) => {
-    setUploadedDocs((prev) => ({
-      ...prev,
-      [docType]: { file, uploading: false, uploaded: false },
-    }));
-  };
-
-  const removeFile = (docType: string) => {
-    setUploadedDocs((prev) => {
-      const newDocs = { ...prev };
-      delete newDocs[docType];
-      return newDocs;
-    });
-  };
-
-  const uploadDocuments = async () => {
-    if (!userId) return;
-
-    for (const [docType, docData] of Object.entries(uploadedDocs)) {
-      if (docData.uploaded) continue;
-
-      setUploadedDocs((prev) => ({
-        ...prev,
-        [docType]: { ...prev[docType], uploading: true },
-      }));
-
-      const fileExt = docData.file.name.split(".").pop();
-      const filePath = `${userId}/${docType}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("user-documents")
-        .upload(filePath, docData.file, { upsert: true });
-
-      if (uploadError) {
-        toast.error(`Failed to upload ${docType}`);
-        setUploadedDocs((prev) => ({
-          ...prev,
-          [docType]: { ...prev[docType], uploading: false },
-        }));
-        continue;
-      }
-
-      // Save document reference to database
-      const { error: dbError } = await supabase.from("user_documents").insert({
-        user_id: userId,
-        document_type: docType,
-        file_name: docData.file.name,
-        file_path: filePath,
-      });
-
-      if (dbError) {
-        console.error("Error saving document reference:", dbError);
-      }
-
-      setUploadedDocs((prev) => ({
-        ...prev,
-        [docType]: { ...prev[docType], uploading: false, uploaded: true },
-      }));
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -171,9 +101,6 @@ const StudentOnboarding = () => {
     setLoading(true);
 
     try {
-      // Upload any selected documents
-      await uploadDocuments();
-
       // Upload profile photo if selected
       let photoUrl: string | null = null;
       if (profilePhotoFile) {
@@ -246,18 +173,6 @@ const StudentOnboarding = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSkipDocuments = async () => {
-    if (!name.trim()) {
-      toast.error("Please enter your name before continuing");
-      return;
-    }
-    
-    // Clear any selected documents and submit
-    setUploadedDocs({});
-    const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-    await handleSubmit(fakeEvent);
   };
 
   if (checkingAuth) {
@@ -408,95 +323,20 @@ const StudentOnboarding = () => {
             </div>
           </div>
 
-          {/* Documents Card */}
-          <div className="bg-card rounded-xl shadow-card p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-card-foreground">Documents</h2>
-                <p className="text-sm text-muted-foreground">Optional - can be added later</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {DOCUMENT_TYPES.map((docType) => {
-                const uploaded = uploadedDocs[docType.id];
-                return (
-                  <div
-                    key={docType.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border bg-background"
-                  >
-                    <span className="text-sm font-medium text-card-foreground">
-                      {docType.label}
-                    </span>
-                    {uploaded ? (
-                      <div className="flex items-center gap-2">
-                        {uploaded.uploading ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                        ) : uploaded.uploaded ? (
-                          <Check className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <>
-                            <span className="text-xs text-muted-foreground truncate max-w-[100px]">
-                              {uploaded.file.name}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => removeFile(docType.id)}
-                              className="text-destructive hover:text-destructive/80"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    ) : (
-                      <label className="cursor-pointer">
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileSelect(docType.id, file);
-                          }}
-                        />
-                        <div className="flex items-center gap-1 text-primary text-sm hover:underline">
-                          <Upload className="w-4 h-4" />
-                          Upload
-                        </div>
-                      </label>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Actions */}
-          <div className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  Complete Profile
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </>
-              )}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleSkipDocuments}
-              disabled={loading}
-              className="text-muted-foreground"
-            >
-              Skip documents for now
-            </Button>
-          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                Complete Profile
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </>
+            )}
+          </Button>
         </form>
       </div>
     </div>
