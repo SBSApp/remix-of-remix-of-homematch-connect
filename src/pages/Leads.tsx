@@ -1,62 +1,33 @@
-import BottomNav from "@/components/BottomNav";
+import AppLayout from "@/components/AppLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLeads, useAgentListings } from "@/hooks/useListings";
-import { Loader2, User, Mail, Phone, BookOpen, MessageSquare, ChevronRight } from "lucide-react";
+import { Loader2, User, Mail, Phone, BookOpen, MessageSquare, ChevronRight, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import FilterBar from "@/components/FilterBar";
 
 const Leads = () => {
   const navigate = useNavigate();
   const { leads, loading } = useLeads();
   const { listings: agentListings } = useAgentListings();
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showListingDialog, setShowListingDialog] = useState(false);
   const [selectedListings, setSelectedListings] = useState<string[]>([]);
 
-  const handleFilterClick = (filter: string) => {
-    if (filter === "Listing") {
-      setShowListingDialog(true);
-      return;
-    }
-    
-    setActiveFilters(prev => 
-      prev.includes(filter) 
-        ? prev.filter(f => f !== filter)
-        : [...prev, filter]
-    );
-  };
-
   const handleListingToggle = (listingId: string) => {
-    setSelectedListings(prev =>
+    setSelectedListings((prev) =>
       prev.includes(listingId)
-        ? prev.filter(id => id !== listingId)
+        ? prev.filter((id) => id !== listingId)
         : [...prev, listingId]
     );
   };
 
-  const handleListingsSubmit = () => {
-    setActiveFilters(prev => {
-      const filtered = prev.filter(f => !f.startsWith("Listing:"));
-      if (selectedListings.length > 0) {
-        return [...filtered, `Listing: ${selectedListings.length} selected`];
-      }
-      return filtered;
-    });
-    setShowListingDialog(false);
-  };
-
-  const hasActiveFilters = activeFilters.length > 0 || selectedListings.length > 0;
-
   const handleClearFilters = () => {
-    setActiveFilters([]);
     setSelectedListings([]);
   };
 
-  const filteredLeads = leads.filter(lead => {
+  const filteredLeads = leads.filter((lead) => {
     if (selectedListings.length > 0) {
       if (!selectedListings.includes(lead.listing_id)) {
         return false;
@@ -66,117 +37,141 @@ const Leads = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="bg-card shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-foreground">Leads</h1>
+    <AppLayout userType="agent">
+      {/* Header */}
+      <div className="bg-card border-b border-border sticky top-0 z-30">
+        <div className="px-8 py-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Leads</h1>
+            <p className="text-muted-foreground mt-1">
+              {filteredLeads.length} interested students
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowListingDialog(true)}
+              className="gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              Filter by Listing
+              {selectedListings.length > 0 && (
+                <Badge variant="default" className="ml-1">
+                  {selectedListings.length}
+                </Badge>
+              )}
+            </Button>
+            {selectedListings.length > 0 && (
+              <Button variant="ghost" onClick={handleClearFilters}>
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto">
-        <FilterBar 
-          filters={["Listing"]} 
-          onFilterClick={handleFilterClick}
-          activeFilters={activeFilters}
-          onClearFilters={handleClearFilters}
-          showClearButton={hasActiveFilters}
-        />
-        
-        <div className="p-4">
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : filteredLeads.length > 0 ? (
-            <div className="space-y-4">
-              {filteredLeads.map((lead) => (
-                <div 
-                  key={lead.id} 
-                  className="bg-card rounded-xl shadow-card p-4 cursor-pointer hover:shadow-elevated transition-shadow"
-                  onClick={() => navigate(`/student/${lead.student_id}`)}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      {lead.profiles?.profile_photo_url ? (
-                        <img 
-                          src={lead.profiles.profile_photo_url} 
-                          alt={lead.profiles?.name || "Student"} 
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-7 h-7 text-primary" />
-                      )}
+      <div className="p-8">
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          </div>
+        ) : filteredLeads.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
+            {filteredLeads.map((lead) => (
+              <div
+                key={lead.id}
+                className="bg-card rounded-xl shadow-card p-6 cursor-pointer hover:shadow-elevated transition-shadow"
+                onClick={() => navigate(`/student/${lead.student_id}`)}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {lead.profiles?.profile_photo_url ? (
+                      <img
+                        src={lead.profiles.profile_photo_url}
+                        alt={lead.profiles?.name || "Student"}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-8 h-8 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg text-card-foreground">
+                        {lead.profiles?.name || "Student"}
+                      </h3>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-lg text-card-foreground">
-                          {lead.profiles?.name || "Student"}
-                        </h3>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Interested in: {lead.listings?.title || "Unknown listing"}
+                    </p>
+
+                    {lead.profiles?.field_of_study && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <BookOpen className="w-4 h-4" />
+                        <span>{lead.profiles.field_of_study}</span>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Interested in: {lead.listings?.title || "Unknown listing"}
-                      </p>
-                      
-                      {lead.profiles?.field_of_study && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                          <BookOpen className="w-4 h-4" />
-                          <span>{lead.profiles.field_of_study}</span>
-                        </div>
-                      )}
-                      
-                      {lead.profiles?.email && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                          <Mail className="w-4 h-4" />
-                          <a href={`mailto:${lead.profiles.email}`} className="text-primary hover:underline">
-                            {lead.profiles.email}
-                          </a>
-                        </div>
-                      )}
-                      
-                      {lead.profiles?.phone_number && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                          <Phone className="w-4 h-4" />
-                          <a href={`tel:${lead.profiles.phone_number}`} className="text-primary hover:underline">
-                            {lead.profiles.phone_number}
-                          </a>
-                        </div>
-                      )}
+                    )}
 
-                      {lead.profiles?.bio && (
-                        <div className="mt-3 pt-3 border-t border-border">
-                          <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <MessageSquare className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                            <p className="line-clamp-3">{lead.profiles.bio}</p>
-                          </div>
-                        </div>
-                      )}
+                    {lead.profiles?.email && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Mail className="w-4 h-4" />
+                        <a
+                          href={`mailto:${lead.profiles.email}`}
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {lead.profiles.email}
+                        </a>
+                      </div>
+                    )}
 
-                      {lead.profiles?.languages && lead.profiles.languages.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {lead.profiles.languages.map((lang: string, idx: number) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
-                              {lang}
-                            </Badge>
-                          ))}
+                    {lead.profiles?.phone_number && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Phone className="w-4 h-4" />
+                        <a
+                          href={`tel:${lead.profiles.phone_number}`}
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {lead.profiles.phone_number}
+                        </a>
+                      </div>
+                    )}
+
+                    {lead.profiles?.bio && (
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <MessageSquare className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <p className="line-clamp-2">{lead.profiles.bio}</p>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
+
+                    {lead.profiles?.languages && lead.profiles.languages.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {lead.profiles.languages.map((lang: string, idx: number) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {lang}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-4xl mb-3">📋</div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">No leads yet</h3>
-              <p className="text-muted-foreground text-sm">When students express interest in your listings, they'll appear here</p>
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">📋</div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">No leads yet</h3>
+            <p className="text-muted-foreground">
+              When students express interest in your listings, they'll appear here
+            </p>
+          </div>
+        )}
       </div>
-
-      <BottomNav userType="agent" />
 
       <Dialog open={showListingDialog} onOpenChange={setShowListingDialog}>
         <DialogContent>
@@ -203,13 +198,16 @@ const Leads = () => {
             ) : (
               <p className="text-sm text-muted-foreground">No listings yet</p>
             )}
-            <Button onClick={handleListingsSubmit} className="w-full mt-4">
+            <Button
+              onClick={() => setShowListingDialog(false)}
+              className="w-full mt-4"
+            >
               Apply Filter
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </AppLayout>
   );
 };
 
