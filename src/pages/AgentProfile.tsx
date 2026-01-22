@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, ChevronRight, Pencil, X, Check, Camera, FileCheck, Trash2, User, Home } from "lucide-react";
+import { ChevronRight, Pencil, X, Check, Camera, User, Home } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAgentListings } from "@/hooks/useListings";
@@ -30,13 +30,6 @@ const AgentProfile = () => {
   const [tempProfilePhotoFile, setTempProfilePhotoFile] = useState<File | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [uploadedDocs, setUploadedDocs] = useState<Record<string, string>>({});
-
-  const documents = [
-    { id: "passport", name: "Passport/ID", label: "Required for verification", dbType: "Passport/ID" },
-    { id: "license", name: "Agent License", label: "Required for verification", dbType: "Agent License" },
-  ];
 
   const { listings: myListings, loading: listingsLoading } = useAgentListings();
 
@@ -66,23 +59,6 @@ const AgentProfile = () => {
           setRealEstateGroup(profile.real_estate_group || "");
           setLanguages(profile.languages?.join(", ") || "");
           setProfilePhoto(profile.profile_photo_url || null);
-        }
-
-        // Fetch uploaded documents
-        const { data: docs } = await supabase
-          .from("user_documents")
-          .select("*")
-          .eq("user_id", user.id);
-
-        if (docs) {
-          const docsMap: Record<string, string> = {};
-          docs.forEach(doc => {
-            const docDef = documents.find(d => d.dbType === doc.document_type);
-            if (docDef) {
-              docsMap[docDef.id] = doc.file_name;
-            }
-          });
-          setUploadedDocs(docsMap);
         }
       } catch (error) {
         console.error("Error:", error);
@@ -180,74 +156,6 @@ const AgentProfile = () => {
 
   const triggerPhotoUpload = () => {
     fileInputRef.current?.click();
-  };
-
-  const handleDocumentUpload = async (docId: string, dbType: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !userId) return;
-
-    try {
-      const filePath = `${userId}/${docId}-${file.name}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from("user-documents")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) {
-        toast.error("Failed to upload document");
-        return;
-      }
-
-      // Check if document already exists
-      const { data: existingDoc } = await supabase
-        .from("user_documents")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("document_type", dbType)
-        .single();
-
-      if (existingDoc) {
-        await supabase
-          .from("user_documents")
-          .update({ file_name: file.name, file_path: filePath })
-          .eq("id", existingDoc.id);
-      } else {
-        await supabase.from("user_documents").insert({
-          user_id: userId,
-          document_type: dbType,
-          file_name: file.name,
-          file_path: filePath
-        });
-      }
-
-      setUploadedDocs(prev => ({ ...prev, [docId]: file.name }));
-      toast.success(`${file.name} uploaded successfully`);
-    } catch (error) {
-      console.error("Error uploading document:", error);
-      toast.error("Failed to upload document");
-    }
-  };
-
-  const handleRemoveDocument = async (docId: string, dbType: string, docName: string) => {
-    if (!userId) return;
-
-    try {
-      await supabase
-        .from("user_documents")
-        .delete()
-        .eq("user_id", userId)
-        .eq("document_type", dbType);
-
-      setUploadedDocs(prev => {
-        const updated = { ...prev };
-        delete updated[docId];
-        return updated;
-      });
-      toast.success(`${docName} removed`);
-    } catch (error) {
-      console.error("Error removing document:", error);
-      toast.error("Failed to remove document");
-    }
   };
 
   if (loading) {
@@ -427,62 +335,6 @@ const AgentProfile = () => {
               <ChevronRight className="w-4 h-4" />
             </button>
           )}
-        </div>
-
-        {/* Documents */}
-        <div className="bg-card rounded-xl shadow-card p-6 mb-4">
-          <h3 className="text-lg font-semibold text-card-foreground mb-2">
-            Documents
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Your documents are safe with us—viewed only by HomeMatch for verification to help students trust your listings.
-          </p>
-          <div className="space-y-3">
-            {documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="w-full bg-accent/30 border border-border rounded-lg p-4 flex items-center justify-between gap-3"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${uploadedDocs[doc.id] ? 'bg-green-100' : 'bg-primary/10'}`}>
-                    {uploadedDocs[doc.id] ? (
-                      <FileCheck className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <Upload className="w-5 h-5 text-primary" />
-                    )}
-                  </div>
-                  <div className="text-left">
-                    <span className="text-sm font-medium text-card-foreground block">
-                      {doc.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {uploadedDocs[doc.id] || doc.label}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {uploadedDocs[doc.id] && (
-                    <button
-                      onClick={() => handleRemoveDocument(doc.id, doc.dbType, doc.name)}
-                      className="p-2 text-destructive hover:bg-destructive/10 rounded-full transition-colors"
-                      aria-label="Remove document"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                  <label className="text-xs text-primary hover:underline cursor-pointer">
-                    {uploadedDocs[doc.id] ? 'Change' : 'Upload'}
-                    <input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                      onChange={(e) => handleDocumentUpload(doc.id, doc.dbType, e)}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Sign Out */}
