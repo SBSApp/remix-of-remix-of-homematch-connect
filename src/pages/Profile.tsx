@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "@/components/BottomNav";
+import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -282,9 +282,10 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="bg-card shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-6 flex items-center justify-between">
+    <AppLayout userType="student">
+      {/* Header */}
+      <div className="bg-card border-b border-border sticky top-0 z-30">
+        <div className="px-8 py-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
           {isEditing ? (
             <div className="flex gap-2">
@@ -306,7 +307,7 @@ const Profile = () => {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto p-4">
+      <div className="p-8 max-w-4xl">
         {/* Profile Header */}
         <div className="bg-card rounded-xl shadow-card p-6 mb-4">
           <div className="flex gap-4 items-start">
@@ -592,9 +593,7 @@ const Profile = () => {
           Sign Out
         </Button>
       </div>
-
-      <BottomNav userType="student" />
-    </div>
+    </AppLayout>
   );
 };
 
