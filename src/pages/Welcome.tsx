@@ -47,7 +47,7 @@ const Welcome = () => {
               Welcome to Fidii!
             </h2>
             <p className="text-muted-foreground mb-8 text-center">
-              Choose how you'd like to use HomeMatch
+              Choose how you'd like to use Fidii
             </p>
 
             <div className="space-y-4">
