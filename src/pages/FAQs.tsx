@@ -43,7 +43,7 @@ const FAQs = () => {
     {
       question: "How do I update my profile?",
       answer:
-        "Go to the Profile section to update your agency information, contact details, and verification documents.",
+        "Go to the Profile section to update your agency information and/or personal details.",
     },
     {
       question: "How do students find my listings?",
