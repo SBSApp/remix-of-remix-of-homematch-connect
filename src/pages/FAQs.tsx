@@ -23,11 +23,6 @@ const FAQs = () => {
         'In HomeMatch agents contact you first. Let the agent know you are interested in their listing by clicking the "I\'m interested!" button.',
     },
     {
-      question: "What documents should I upload?",
-      answer:
-        "We recommend uploading your Passport/ID, Residence permit/visa, and Proof of enrollment. Additional documents like financial proof can improve your chances.",
-    },
-    {
       question: "How do I save a listing?",
       answer:
         "Click the heart icon on any listing to save it. You can view all saved listings in the Saved section.",
