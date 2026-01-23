@@ -14,7 +14,7 @@ const Welcome = () => {
           </div>
           <h1 className="text-5xl font-bold text-foreground mb-4">Fidii</h1>
           <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-            Connecting international students with verified real estate agents through a safe, transparent, and easy-to-use experience. We make renting abroad simple, reliable, and stress-free for everyone involved.
+            Connecting international students with verified real estate agents through a <span className="text-primary font-semibold">safe</span>, <span className="text-primary font-semibold">transparent</span>, and <span className="text-primary font-semibold">easy-to-use</span> experience. We make renting abroad simple, reliable, and stress-free for everyone involved.
           </p>
         </div>
       </div>
@@ -25,7 +25,7 @@ const Welcome = () => {
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <h1 className="text-4xl font-bold text-primary">Fidii</h1>
-            <p className="text-muted-foreground mt-2 leading-relaxed">Connecting international students with verified real estate agents through a safe, transparent, and easy-to-use experience.</p>
+            <p className="text-muted-foreground mt-2 leading-relaxed">Connecting international students with verified real estate agents through a <span className="text-primary font-semibold">safe</span>, <span className="text-primary font-semibold">transparent</span>, and <span className="text-primary font-semibold">easy-to-use</span> experience.</p>
           </div>
 
           <div className="bg-card rounded-2xl shadow-elevated p-8">
