@@ -257,7 +257,7 @@ const AgentProfile = () => {
                       className="h-9"
                     />
                   </div>
-                  <p className="text-sm text-muted-foreground">Response time: 1 hour</p>
+                  
                   <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
                     Verified Agent
                   </Badge>
@@ -270,10 +270,9 @@ const AgentProfile = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     {realEstateGroup || "Your Real Estate Group"}
                   </p>
-                  <div className="space-y-1 text-sm text-muted-foreground">
-                    <p>Response time: 1 hour</p>
-                    <p>Languages: {languages || "Not set"}</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Languages: {languages || "Not set"}
+                  </p>
                   <div className="mt-3">
                     <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
                       Verified Agent

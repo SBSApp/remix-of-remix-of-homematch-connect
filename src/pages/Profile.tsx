@@ -273,7 +273,7 @@ const Profile = () => {
                       className="h-9"
                     />
                   </div>
-                  <p className="text-sm text-muted-foreground">Response time: 2 hours</p>
+                  
                 </div>
               ) : (
                 <>
@@ -283,10 +283,9 @@ const Profile = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     {fieldOfStudy || "Your Field of Study"}
                   </p>
-                  <div className="space-y-1 text-sm text-muted-foreground">
-                    <p>Response time: 2 hours</p>
-                    <p>Languages: {languages || "Not set"}</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Languages: {languages || "Not set"}
+                  </p>
                 </>
               )}
             </div>
