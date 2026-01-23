@@ -16,20 +16,6 @@ const Welcome = () => {
           <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
             Connecting international students with verified real estate agents through a safe, transparent, and easy-to-use experience. We make renting abroad simple, reliable, and stress-free for everyone involved.
           </p>
-          <div className="flex items-center justify-center gap-8 text-muted-foreground">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">500+</div>
-              <div className="text-sm">Listings</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">1000+</div>
-              <div className="text-sm">Students</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">50+</div>
-              <div className="text-sm">Agents</div>
-            </div>
-          </div>
         </div>
       </div>
 
