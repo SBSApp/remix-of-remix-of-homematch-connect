@@ -15,12 +15,12 @@ const FAQs = () => {
     {
       question: "How do I create a profile?",
       answer:
-        "Navigate to the Profile section from the sidebar and fill in your details including bio and upload relevant documents.",
+        "Navigate to the Profile section from the sidebar and fill in or edit your details.",
     },
     {
       question: "How do I contact an agent?",
       answer:
-        'In HomeMatch agents contact you first. Let the agent know you are interested in their listing by clicking the "I\'m interested!" button.',
+        'In Fidii agents contact you first. Let the agent know you are interested in their listing by clicking the "I\'m interested!" button.',
     },
     {
       question: "How do I save a listing?",
