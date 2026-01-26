@@ -228,7 +228,7 @@ export const useLeads = () => {
       (data || []).map(async (lead) => {
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("name, email, phone_number, field_of_study, bio, profile_photo_url, languages")
+          .select("name, email, phone_number, field_of_study, bio, profile_photo_url, languages, documents_ready")
           .eq("user_id", lead.student_id)
           .maybeSingle();
         

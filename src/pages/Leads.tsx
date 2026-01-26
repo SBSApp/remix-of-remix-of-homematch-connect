@@ -2,18 +2,21 @@ import AppLayout from "@/components/AppLayout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLeads, useAgentListings } from "@/hooks/useListings";
-import { Loader2, User, Mail, Phone, BookOpen, MessageSquare, ChevronRight, Filter } from "lucide-react";
+import { Loader2, User, Mail, Phone, BookOpen, MessageSquare, ChevronRight, Filter, FileText, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DOCUMENT_OPTIONS } from "@/constants/documents";
 
 const Leads = () => {
   const navigate = useNavigate();
   const { leads, loading } = useLeads();
   const { listings: agentListings } = useAgentListings();
   const [showListingDialog, setShowListingDialog] = useState(false);
+  const [showDocumentDialog, setShowDocumentDialog] = useState(false);
   const [selectedListings, setSelectedListings] = useState<string[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
   const handleListingToggle = (listingId: string) => {
     setSelectedListings((prev) =>
@@ -23,13 +26,33 @@ const Leads = () => {
     );
   };
 
-  const handleClearFilters = () => {
-    setSelectedListings([]);
+  const handleDocumentToggle = (doc: string) => {
+    setSelectedDocuments((prev) =>
+      prev.includes(doc)
+        ? prev.filter((d) => d !== doc)
+        : [...prev, doc]
+    );
   };
 
+  const handleClearFilters = () => {
+    setSelectedListings([]);
+    setSelectedDocuments([]);
+  };
+
+  const activeFilterCount = selectedListings.length + selectedDocuments.length;
+
   const filteredLeads = leads.filter((lead) => {
+    // Filter by listing
     if (selectedListings.length > 0) {
       if (!selectedListings.includes(lead.listing_id)) {
+        return false;
+      }
+    }
+    // Filter by documents - student must have ALL selected documents
+    if (selectedDocuments.length > 0) {
+      const studentDocs = lead.profiles?.documents_ready || [];
+      const hasAllDocs = selectedDocuments.every((doc) => studentDocs.includes(doc));
+      if (!hasAllDocs) {
         return false;
       }
     }
@@ -54,16 +77,29 @@ const Leads = () => {
               className="gap-2"
             >
               <Filter className="w-4 h-4" />
-              Filter by Listing
+              By Listing
               {selectedListings.length > 0 && (
                 <Badge variant="default" className="ml-1">
                   {selectedListings.length}
                 </Badge>
               )}
             </Button>
-            {selectedListings.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => setShowDocumentDialog(true)}
+              className="gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              By Documents
+              {selectedDocuments.length > 0 && (
+                <Badge variant="default" className="ml-1">
+                  {selectedDocuments.length}
+                </Badge>
+              )}
+            </Button>
+            {activeFilterCount > 0 && (
               <Button variant="ghost" onClick={handleClearFilters}>
-                Clear
+                Clear All
               </Button>
             )}
           </div>
@@ -157,6 +193,31 @@ const Leads = () => {
                         ))}
                       </div>
                     )}
+
+                    {lead.profiles?.documents_ready && lead.profiles.documents_ready.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>{lead.profiles.documents_ready.length} documents ready</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {lead.profiles.documents_ready.slice(0, 3).map((doc: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-primary/10 text-primary"
+                            >
+                              <Check className="w-3 h-3 mr-1" />
+                              {doc}
+                            </span>
+                          ))}
+                          {lead.profiles.documents_ready.length > 3 && (
+                            <span className="text-xs text-muted-foreground">
+                              +{lead.profiles.documents_ready.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -200,6 +261,40 @@ const Leads = () => {
             )}
             <Button
               onClick={() => setShowListingDialog(false)}
+              className="w-full mt-4"
+            >
+              Apply Filter
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDocumentDialog} onOpenChange={setShowDocumentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Filter by Documents Ready</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-4">
+            Show only students who have these documents ready:
+          </p>
+          <div className="space-y-3 py-4 max-h-80 overflow-y-auto">
+            {DOCUMENT_OPTIONS.map((doc) => (
+              <div key={doc} className="flex items-center space-x-3">
+                <Checkbox
+                  id={`filter-${doc}`}
+                  checked={selectedDocuments.includes(doc)}
+                  onCheckedChange={() => handleDocumentToggle(doc)}
+                />
+                <label
+                  htmlFor={`filter-${doc}`}
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  {doc}
+                </label>
+              </div>
+            ))}
+            <Button
+              onClick={() => setShowDocumentDialog(false)}
               className="w-full mt-4"
             >
               Apply Filter

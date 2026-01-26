@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil, X, Check, Camera, User } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Pencil, X, Check, Camera, User, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { DOCUMENT_OPTIONS } from "@/constants/documents";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ const Profile = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [documentsReady, setDocumentsReady] = useState<string[]>([]);
 
   // Temp values for editing
   const [tempName, setTempName] = useState(name);
@@ -33,6 +36,7 @@ const Profile = () => {
   const [tempEmail, setTempEmail] = useState(email);
   const [tempProfilePhoto, setTempProfilePhoto] = useState<string | null>(profilePhoto);
   const [tempProfilePhotoFile, setTempProfilePhotoFile] = useState<File | null>(null);
+  const [tempDocumentsReady, setTempDocumentsReady] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,6 +69,7 @@ const Profile = () => {
           setPhoneNumber(profile.phone_number || "");
           setEmail(profile.email || "");
           setProfilePhoto(profile.profile_photo_url || null);
+          setDocumentsReady(profile.documents_ready || []);
         }
 
       } catch (error) {
@@ -86,6 +91,7 @@ const Profile = () => {
     setTempEmail(email);
     setTempProfilePhoto(profilePhoto);
     setTempProfilePhotoFile(null);
+    setTempDocumentsReady(documentsReady);
     setIsEditing(true);
   };
 
@@ -128,6 +134,7 @@ const Profile = () => {
           phone_number: tempPhoneNumber,
           email: tempEmail,
           profile_photo_url: photoUrl,
+          documents_ready: tempDocumentsReady.length > 0 ? tempDocumentsReady : null,
           updated_at: new Date().toISOString()
         })
         .eq("user_id", userId);
@@ -145,6 +152,7 @@ const Profile = () => {
       setPhoneNumber(tempPhoneNumber);
       setEmail(tempEmail);
       setProfilePhoto(photoUrl);
+      setDocumentsReady(tempDocumentsReady);
       setIsEditing(false);
       toast.success("Profile saved successfully");
     } catch (error) {
@@ -351,6 +359,62 @@ const Profile = () => {
                 <span className="text-muted-foreground">Email:</span>
                 <span className="text-card-foreground">{email || "Not set"}</span>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Documents Ready Section */}
+        <div className="bg-card rounded-xl shadow-card p-6 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <FileText className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold text-card-foreground">
+              Documents Ready
+            </h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Select the documents you have ready to share with agents. The more documents you have, the better your chances!
+          </p>
+          {isEditing ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {DOCUMENT_OPTIONS.map((doc) => (
+                <div key={doc} className="flex items-center space-x-3">
+                  <Checkbox
+                    id={`doc-${doc}`}
+                    checked={tempDocumentsReady.includes(doc)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setTempDocumentsReady((prev) => [...prev, doc]);
+                      } else {
+                        setTempDocumentsReady((prev) => prev.filter((d) => d !== doc));
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor={`doc-${doc}`}
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    {doc}
+                  </label>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {documentsReady.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {documentsReady.map((doc) => (
+                    <span
+                      key={doc}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary/10 text-primary"
+                    >
+                      <Check className="w-3.5 h-3.5 mr-1.5" />
+                      {doc}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No documents selected yet.</p>
+              )}
             </div>
           )}
         </div>

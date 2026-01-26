@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { ArrowRight, Loader2, Camera, User } from "lucide-react";
+import { ArrowRight, Loader2, Camera, User, FileText } from "lucide-react";
+import { DOCUMENT_OPTIONS } from "@/constants/documents";
 
 const LANGUAGE_OPTIONS = [
   "English",
@@ -37,6 +39,7 @@ const StudentOnboarding = () => {
   const [bio, setBio] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [documentsReady, setDocumentsReady] = useState<string[]>([]);
   
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
@@ -141,6 +144,7 @@ const StudentOnboarding = () => {
             phone_number: phoneNumber.trim() || null,
             email: email.trim() || null,
             profile_photo_url: photoUrl,
+            documents_ready: documentsReady.length > 0 ? documentsReady : null,
             onboarding_completed: true,
             role: "student",
           })
@@ -158,6 +162,7 @@ const StudentOnboarding = () => {
           phone_number: phoneNumber.trim() || null,
           email: email.trim() || null,
           profile_photo_url: photoUrl,
+          documents_ready: documentsReady.length > 0 ? documentsReady : null,
           onboarding_completed: true,
           role: "student",
         });
@@ -320,6 +325,40 @@ const StudentOnboarding = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+            </div>
+          </div>
+
+          {/* Documents Ready Card */}
+          <div className="bg-card rounded-xl shadow-card p-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold text-card-foreground">Documents Ready</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Select the documents you have ready to share with agents. The more you have, the better your chances!
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {DOCUMENT_OPTIONS.map((doc) => (
+                <div key={doc} className="flex items-center space-x-3">
+                  <Checkbox
+                    id={`onboard-${doc}`}
+                    checked={documentsReady.includes(doc)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setDocumentsReady((prev) => [...prev, doc]);
+                      } else {
+                        setDocumentsReady((prev) => prev.filter((d) => d !== doc));
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor={`onboard-${doc}`}
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    {doc}
+                  </label>
+                </div>
+              ))}
             </div>
           </div>
 
