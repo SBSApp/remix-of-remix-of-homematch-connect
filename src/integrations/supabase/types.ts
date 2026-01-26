@@ -113,6 +113,7 @@ export type Database = {
         Row: {
           bio: string | null
           created_at: string | null
+          documents_ready: string[] | null
           email: string | null
           field_of_study: string | null
           id: string
@@ -129,6 +130,7 @@ export type Database = {
         Insert: {
           bio?: string | null
           created_at?: string | null
+          documents_ready?: string[] | null
           email?: string | null
           field_of_study?: string | null
           id?: string
@@ -145,6 +147,7 @@ export type Database = {
         Update: {
           bio?: string | null
           created_at?: string | null
+          documents_ready?: string[] | null
           email?: string | null
           field_of_study?: string | null
           id?: string
