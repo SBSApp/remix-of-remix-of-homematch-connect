@@ -185,19 +185,6 @@ const StudentProfile = () => {
                 </Badge>
               </div>
               
-              {/* Progress Bar */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">Document readiness</span>
-                  <span className="font-medium text-foreground">{documentProgress}%</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary rounded-full transition-all duration-300"
-                    style={{ width: `${documentProgress}%` }}
-                  />
-                </div>
-              </div>
 
               {documentsReady.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
