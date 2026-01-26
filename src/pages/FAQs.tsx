@@ -27,11 +27,6 @@ const FAQs = () => {
       answer:
         "Click the heart icon on any listing to save it. You can view all saved listings in the Saved section.",
     },
-    {
-      question: "Where is my data being stored?",
-      answer:
-        "We dont store any confidential information",
-    },
   ];
 
   const agentFAQs = [
@@ -54,11 +49,6 @@ const FAQs = () => {
       question: "How do students find my listings?",
       answer:
         "Students can browse and filter listings on their home page. Any student that is interested in the property will automatically appear on your home page in the Leads section.",
-    },
-    {
-      question: "Where is my data being stored?",
-      answer:
-        "We dont store any confidential information",
     },
   ];
 
