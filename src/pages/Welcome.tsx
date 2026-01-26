@@ -14,7 +14,7 @@ const Welcome = () => {
           </div>
           <h1 className="text-5xl font-bold text-foreground mb-4">Fidii - Housing</h1>
           <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-            Connecting international students with verified real estate agents through a <span className="text-primary font-semibold">safe</span>, <span className="text-primary font-semibold">transparent</span>, and <span className="text-primary font-semibold">easy-to-use</span> experience. We make renting abroad simple, reliable, and stress-free for everyone involved.
+            Connecting international students with verified real estate agents through a <span className="text-primary font-semibold">safe</span>, <span className="text-primary font-semibold">transparent</span>, and <span className="text-primary font-semibold">easy-to-use</span> experience.
           </p>
         </div>
       </div>
