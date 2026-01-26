@@ -1,10 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { ArrowLeft, User, Clock, Mail, Phone, BookOpen, Globe, Loader2 } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, BookOpen, Globe, Loader2, FileCheck, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import BottomNav from "@/components/BottomNav";
+import AppLayout from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { DOCUMENT_OPTIONS } from "@/constants/documents";
 
 interface StudentProfileData {
   user_id: string;
@@ -15,6 +16,7 @@ interface StudentProfileData {
   bio: string | null;
   languages: string[] | null;
   profile_photo_url: string | null;
+  documents_ready: string[] | null;
 }
 
 const StudentProfile = () => {
@@ -33,7 +35,6 @@ const StudentProfile = () => {
       }
 
       try {
-        // First verify this is a lead belonging to the current agent
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           setError("Not authenticated");
@@ -41,10 +42,9 @@ const StudentProfile = () => {
           return;
         }
 
-        // Fetch the student profile - RLS will only allow if agent has a lead from this student
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("user_id, name, email, phone_number, field_of_study, bio, languages, profile_photo_url")
+          .select("user_id, name, email, phone_number, field_of_study, bio, languages, profile_photo_url, documents_ready")
           .eq("user_id", id)
           .maybeSingle();
 
@@ -75,154 +75,220 @@ const StudentProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <AppLayout userType="agent">
+        <div className="flex items-center justify-center h-full min-h-[60vh]">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        </div>
+      </AppLayout>
     );
   }
 
   if (error || !student) {
     return (
-      <div className="min-h-screen bg-background pb-20">
-        <div className="bg-card shadow-sm">
-          <div className="max-w-lg mx-auto px-4 py-4">
-            <button 
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back</span>
-            </button>
+      <AppLayout userType="agent">
+        <div className="flex items-center justify-center h-full min-h-[60vh]">
+          <div className="text-center">
+            <div className="text-6xl mb-4">👤</div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Student not found</h1>
+            <p className="text-muted-foreground mb-4">{error || "This profile doesn't exist or you don't have access."}</p>
+            <Button onClick={() => navigate("/leads")}>Back to Leads</Button>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center pt-20">
-          <p className="text-muted-foreground">{error || "Student not found"}</p>
-          <Button variant="outline" onClick={() => navigate("/leads")} className="mt-4">
-            Return to Leads
-          </Button>
-        </div>
-        <BottomNav userType="agent" />
-      </div>
+      </AppLayout>
     );
   }
 
+  const documentsReady = student.documents_ready || [];
+  const documentProgress = Math.round((documentsReady.length / DOCUMENT_OPTIONS.length) * 100);
+
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <AppLayout userType="agent">
       {/* Header */}
-      <div className="bg-card shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-4">
-          <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
+      <div className="bg-card border-b border-border sticky top-0 z-30">
+        <div className="px-8 py-4 flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-5 h-5" />
-            <span>Back to Leads</span>
-          </button>
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{student.name || "Student"}</h1>
+            {student.field_of_study && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <BookOpen className="w-4 h-4" />
+                <span>{student.field_of_study}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto p-4">
-        {/* Profile Header */}
-        <div className="bg-card rounded-xl shadow-card p-6 mb-4">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-              {student.profile_photo_url ? (
-                <img 
-                  src={student.profile_photo_url} 
-                  alt={student.name || "Student"} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-10 h-10 text-muted-foreground" />
-              )}
-            </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-card-foreground">
-                {student.name || "Student"}
-              </h1>
-              {student.field_of_study && (
-                <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                  <BookOpen className="w-4 h-4" />
-                  <span>{student.field_of_study}</span>
+      {/* Main Content */}
+      <div className="p-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Left Column - Profile Info */}
+          <div className="xl:col-span-2 space-y-6">
+            {/* Profile Header Card */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-start gap-6">
+                <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {student.profile_photo_url ? (
+                    <img 
+                      src={student.profile_photo_url} 
+                      alt={student.name || "Student"} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-12 h-12 text-muted-foreground" />
+                  )}
                 </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-foreground mb-2">{student.name || "Student"}</h2>
+                  {student.field_of_study && (
+                    <div className="flex items-center gap-2 text-muted-foreground mb-4">
+                      <BookOpen className="w-4 h-4" />
+                      <span>{student.field_of_study}</span>
+                    </div>
+                  )}
+                  {student.languages && student.languages.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                        <Globe className="w-4 h-4" />
+                        <span>Languages</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {student.languages.map((language) => (
+                          <Badge key={language} variant="outline">
+                            {language}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* About */}
+            {student.bio && (
+              <div className="bg-card rounded-xl border border-border p-6">
+                <h2 className="text-xl font-semibold text-foreground mb-4">About</h2>
+                <p className="text-muted-foreground leading-relaxed">{student.bio}</p>
+              </div>
+            )}
+
+            {/* Documents Ready */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-foreground">Documents Ready</h2>
+                <Badge variant="secondary" className="text-sm">
+                  <FileCheck className="w-4 h-4 mr-1" />
+                  {documentsReady.length} of {DOCUMENT_OPTIONS.length}
+                </Badge>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">Document readiness</span>
+                  <span className="font-medium text-foreground">{documentProgress}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary rounded-full transition-all duration-300"
+                    style={{ width: `${documentProgress}%` }}
+                  />
+                </div>
+              </div>
+
+              {documentsReady.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {DOCUMENT_OPTIONS.map((doc) => {
+                    const isReady = documentsReady.includes(doc);
+                    return (
+                      <div 
+                        key={doc} 
+                        className={`flex items-center gap-3 p-3 rounded-lg border ${
+                          isReady 
+                            ? "bg-primary/10 border-primary/30" 
+                            : "bg-muted/30 border-border opacity-50"
+                        }`}
+                      >
+                        <FileText className={`w-5 h-5 ${isReady ? "text-primary" : "text-muted-foreground"}`} />
+                        <span className={isReady ? "text-foreground" : "text-muted-foreground"}>{doc}</span>
+                        {isReady && (
+                          <FileCheck className="w-4 h-4 text-primary ml-auto" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-4">
+                  This student hasn't indicated which documents they have ready.
+                </p>
               )}
             </div>
           </div>
-          
-          {student.languages && student.languages.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                <Globe className="w-4 h-4" />
-                <span>Languages</span>
+
+          {/* Right Column - Contact */}
+          <div className="space-y-6">
+            {/* Contact Card */}
+            <div className="bg-card rounded-xl border border-border p-6 sticky top-24">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Contact Information</h3>
+              
+              <div className="space-y-4 mb-6">
+                {student.email && (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                    <Mail className="w-5 h-5 text-primary" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <a href={`mailto:${student.email}`} className="text-foreground hover:text-primary truncate block">
+                        {student.email}
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {student.phone_number && (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                    <Phone className="w-5 h-5 text-primary" />
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground">Phone</p>
+                      <a href={`tel:${student.phone_number}`} className="text-foreground hover:text-primary">
+                        {student.phone_number}
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {!student.email && !student.phone_number && (
+                  <p className="text-muted-foreground text-sm text-center py-4">
+                    No contact information available
+                  </p>
+                )}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {student.languages.map((language) => (
-                  <Badge key={language} variant="outline">
-                    {language}
-                  </Badge>
-                ))}
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                {student.email && (
+                  <Button className="w-full" variant="outline" asChild>
+                    <a href={`mailto:${student.email}`}>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Send Email
+                    </a>
+                  </Button>
+                )}
+                {student.phone_number && (
+                  <Button className="w-full" asChild>
+                    <a href={`tel:${student.phone_number}`}>
+                      <Phone className="w-4 h-4 mr-2" />
+                      Call Now
+                    </a>
+                  </Button>
+                )}
               </div>
             </div>
-          )}
-        </div>
-
-        {/* About */}
-        {student.bio && (
-          <div className="bg-card rounded-xl shadow-card p-6 mb-4">
-            <h2 className="text-lg font-semibold text-card-foreground mb-3">About</h2>
-            <p className="text-card-foreground leading-relaxed">{student.bio}</p>
           </div>
-        )}
-
-        {/* Contact */}
-        <div className="bg-card rounded-xl shadow-card p-6 mb-4">
-          <h2 className="text-lg font-semibold text-card-foreground mb-4">Contact Information</h2>
-          <div className="space-y-3">
-            {student.email && (
-              <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-muted-foreground" />
-                <a href={`mailto:${student.email}`} className="text-primary hover:underline">
-                  {student.email}
-                </a>
-              </div>
-            )}
-            {student.phone_number && (
-              <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-muted-foreground" />
-                <a href={`tel:${student.phone_number}`} className="text-primary hover:underline">
-                  {student.phone_number}
-                </a>
-              </div>
-            )}
-            {!student.email && !student.phone_number && (
-              <p className="text-muted-foreground text-sm">No contact information available</p>
-            )}
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          {student.email && (
-            <Button className="flex-1" variant="outline" asChild>
-              <a href={`mailto:${student.email}`}>
-                <Mail className="w-4 h-4 mr-2" />
-                Send Email
-              </a>
-            </Button>
-          )}
-          {student.phone_number && (
-            <Button className="flex-1" asChild>
-              <a href={`tel:${student.phone_number}`}>
-                <Phone className="w-4 h-4 mr-2" />
-                Call Now
-              </a>
-            </Button>
-          )}
         </div>
       </div>
-
-      <BottomNav userType="agent" />
-    </div>
+    </AppLayout>
   );
 };
 
