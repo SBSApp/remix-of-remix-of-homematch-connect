@@ -1,12 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
-import BottomNav from "@/components/BottomNav";
+import AppLayout from "@/components/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Heart, MapPin, Ruler, Calendar, User, Loader2 } from "lucide-react";
+import { ArrowLeft, Heart, MapPin, Ruler, Calendar, User, Loader2, Home, Wifi, Car, Snowflake, Tv, Utensils } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { expressInterest, useSavedListingsDB } from "@/hooks/useListings";
-import { toast } from "sonner";
 
 interface ListingWithAgent {
   id: string;
@@ -33,6 +32,7 @@ const ListingDetail = () => {
   const [listing, setListing] = useState<ListingWithAgent | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState(0);
   const { isSaved, toggleSaved } = useSavedListingsDB();
   const [isListingSaved, setIsListingSaved] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -50,7 +50,6 @@ const ListingDetail = () => {
       if (error) {
         console.error("Error fetching listing:", error);
       } else if (data) {
-        // Fetch agent profile separately
         const { data: profileData } = await supabase
           .from("profiles")
           .select("name, real_estate_group")
@@ -109,25 +108,6 @@ const ListingDetail = () => {
     setIsSubmitting(false);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!listing) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Listing not found</h1>
-          <Button onClick={() => navigate("/listings")}>Back to Listings</Button>
-        </div>
-      </div>
-    );
-  }
-
   const getStayTypeBadgeStyle = (type: string) => {
     switch (type) {
       case "Short Term":
@@ -141,120 +121,217 @@ const ListingDetail = () => {
     }
   };
 
+  const getAmenityIcon = (amenity: string) => {
+    const lower = amenity.toLowerCase();
+    if (lower.includes("wifi") || lower.includes("internet")) return Wifi;
+    if (lower.includes("parking") || lower.includes("car")) return Car;
+    if (lower.includes("ac") || lower.includes("air") || lower.includes("heating")) return Snowflake;
+    if (lower.includes("tv") || lower.includes("television")) return Tv;
+    if (lower.includes("kitchen") || lower.includes("cook")) return Utensils;
+    return Home;
+  };
+
+  if (loading) {
+    return (
+      <AppLayout userType="student">
+        <div className="flex items-center justify-center h-full min-h-[60vh]">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <AppLayout userType="student">
+        <div className="flex items-center justify-center h-full min-h-[60vh]">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🏠</div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Listing not found</h1>
+            <p className="text-muted-foreground mb-4">This property may have been removed or doesn't exist.</p>
+            <Button onClick={() => navigate("/listings")}>Back to Listings</Button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const photos = listing.photos && listing.photos.length > 0 ? listing.photos : ["/placeholder.svg"];
+
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <AppLayout userType="student">
       {/* Header */}
-      <div className="bg-card shadow-sm sticky top-0 z-10">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-lg font-semibold text-foreground flex-1 truncate">{listing.title}</h1>
-          <Button variant="ghost" size="icon" onClick={handleHeartClick}>
+      <div className="bg-card border-b border-border sticky top-0 z-30">
+        <div className="px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="w-4 h-4" />
+                <span>{listing.location}</span>
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleHeartClick}
+            className="h-10 w-10"
+          >
             <Heart
-              className={`w-5 h-5 ${isListingSaved ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
+              className={`w-6 h-6 ${isListingSaved ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
             />
           </Button>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto">
-        {/* Main Image */}
-        <div className="relative">
-          <img
-            src={listing.photos?.[0] || "/placeholder.svg"}
-            alt={listing.title}
-            className="w-full h-64 object-cover"
-          />
-          {listing.stay_type && (
-            <Badge className={`absolute bottom-4 left-4 ${getStayTypeBadgeStyle(listing.stay_type)}`}>
-              {listing.stay_type}
-            </Badge>
-          )}
-        </div>
-
-        <div className="p-4 space-y-4">
-          {/* Price & Location */}
-          <div className="bg-card rounded-xl shadow-card p-4">
-            <p className="text-primary font-bold text-2xl mb-2">{listing.price}</p>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MapPin className="w-4 h-4" />
-              <span>{listing.location}</span>
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="bg-card rounded-xl shadow-card p-4">
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div>
-                <Ruler className="w-5 h-5 mx-auto text-primary mb-1" />
-                <p className="text-sm font-medium text-card-foreground">{listing.size}</p>
-                <p className="text-xs text-muted-foreground">Size</p>
-              </div>
-              <div>
-                <Calendar className="w-5 h-5 mx-auto text-primary mb-1" />
-                <p className="text-sm font-medium text-card-foreground">{listing.stay_type || "Flexible"}</p>
-                <p className="text-xs text-muted-foreground">Duration</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="bg-card rounded-xl shadow-card p-4">
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">About this property</h3>
-            <p className="text-muted-foreground">{listing.description}</p>
-          </div>
-
-          {/* Features/Amenities */}
-          {listing.amenities && listing.amenities.length > 0 && (
-            <div className="bg-card rounded-xl shadow-card p-4">
-              <h3 className="text-lg font-semibold text-card-foreground mb-3">Amenities</h3>
-              <div className="flex flex-wrap gap-2">
-                {listing.amenities.map((amenity, index) => (
-                  <Badge key={index} variant="secondary" className="text-sm">
-                    {amenity}
+      {/* Main Content */}
+      <div className="p-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Left Column - Photos & Details */}
+          <div className="xl:col-span-2 space-y-6">
+            {/* Photo Gallery */}
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="aspect-video relative">
+                <img
+                  src={photos[selectedPhoto]}
+                  alt={listing.title}
+                  className="w-full h-full object-cover"
+                />
+                {listing.stay_type && (
+                  <Badge className={`absolute top-4 left-4 ${getStayTypeBadgeStyle(listing.stay_type)}`}>
+                    {listing.stay_type}
                   </Badge>
-                ))}
+                )}
               </div>
+              {photos.length > 1 && (
+                <div className="p-4 flex gap-2 overflow-x-auto">
+                  {photos.map((photo, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedPhoto(index)}
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                        selectedPhoto === index ? "border-primary" : "border-transparent"
+                      }`}
+                    >
+                      <img src={photo} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Agent Info */}
-          <div className="bg-card rounded-xl shadow-card p-4">
-            <h3 className="text-lg font-semibold text-card-foreground mb-3">Listed by</h3>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-card-foreground">{listing.profiles?.name || "Agent"}</p>
-                <p className="text-sm text-muted-foreground">{listing.profiles?.real_estate_group || "Independent Agent"}</p>
+            {/* Quick Stats */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                    <Ruler className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="font-semibold text-foreground">{listing.size}</p>
+                  <p className="text-sm text-muted-foreground">Size</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                    <Calendar className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="font-semibold text-foreground">{listing.stay_type || "Flexible"}</p>
+                  <p className="text-sm text-muted-foreground">Duration</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                    <MapPin className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="font-semibold text-foreground">{listing.neighborhood || "—"}</p>
+                  <p className="text-sm text-muted-foreground">Neighborhood</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                    <Home className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="font-semibold text-foreground">{listing.amenities?.length || 0}</p>
+                  <p className="text-sm text-muted-foreground">Amenities</p>
+                </div>
               </div>
             </div>
+
+            {/* Description */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h2 className="text-xl font-semibold text-foreground mb-4">About this property</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                {listing.description || "No description available for this property."}
+              </p>
+            </div>
+
+            {/* Amenities */}
+            {listing.amenities && listing.amenities.length > 0 && (
+              <div className="bg-card rounded-xl border border-border p-6">
+                <h2 className="text-xl font-semibold text-foreground mb-4">Amenities</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {listing.amenities.map((amenity, index) => {
+                    const Icon = getAmenityIcon(amenity);
+                    return (
+                      <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                        <Icon className="w-5 h-5 text-primary" />
+                        <span className="text-foreground">{amenity}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Get in Contact */}
-          <div className="bg-card rounded-xl shadow-card p-4">
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">Get in Contact</h3>
-            <p className="text-muted-foreground text-sm mb-4">
-              Let the agent know you are interested in this listing so they can contact you directly.
-            </p>
-            <Button className="w-full" onClick={handleInterest} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                "I'm interested!"
-              )}
-            </Button>
+          {/* Right Column - Price & Contact */}
+          <div className="space-y-6">
+            {/* Price Card */}
+            <div className="bg-card rounded-xl border border-border p-6 sticky top-24">
+              <div className="mb-6">
+                <p className="text-sm text-muted-foreground mb-1">Monthly Rent</p>
+                <p className="text-4xl font-bold text-primary">{listing.price}</p>
+              </div>
+
+              {/* Agent Info */}
+              <div className="border-t border-border pt-6 mb-6">
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">Listed by</h3>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{listing.profiles?.name || "Agent"}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {listing.profiles?.real_estate_group || "Independent Agent"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Section */}
+              <div className="border-t border-border pt-6">
+                <h3 className="text-lg font-semibold text-foreground mb-2">Interested?</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Let the agent know you're interested so they can contact you directly.
+                </p>
+                <Button className="w-full" size="lg" onClick={handleInterest} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "I'm interested!"
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <BottomNav userType="student" />
-    </div>
+    </AppLayout>
   );
 };
 
