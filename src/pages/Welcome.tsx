@@ -133,9 +133,6 @@ const Welcome = () => {
             </div>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            By continuing, you agree to our Terms of Service
-          </p>
         </div>
       </div>
     </div>
