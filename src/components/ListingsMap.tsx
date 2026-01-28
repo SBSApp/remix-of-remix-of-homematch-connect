@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useNavigate } from "react-router-dom";
@@ -13,18 +12,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// Custom marker icon with price
-const createPriceMarker = (price: string) => {
-  return L.divIcon({
-    className: "custom-price-marker",
-    html: `<div class="bg-primary text-primary-foreground px-2 py-1 rounded-lg text-xs font-semibold shadow-lg whitespace-nowrap">${price}</div>`,
-    iconSize: [80, 30],
-    iconAnchor: [40, 30],
-  });
-};
-
 // Barcelona center coordinates
-const BARCELONA_CENTER: [number, number] = [41.3851, 2.1734];
+const BARCELONA_CENTER: L.LatLngExpression = [41.3851, 2.1734];
 
 interface Listing {
   id: string;
@@ -43,71 +32,85 @@ interface ListingsMapProps {
   className?: string;
 }
 
-// Component to fit bounds
-function FitBoundsController({ listings }: { listings: Listing[] }) {
-  const map = useMap();
-
-  useEffect(() => {
-    const validListings = listings.filter((l) => l.latitude && l.longitude);
-    if (validListings.length > 0) {
-      const bounds = L.latLngBounds(
-        validListings.map((l) => [l.latitude!, l.longitude!] as [number, number])
-      );
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
-    }
-  }, [listings, map]);
-
-  return null;
-}
-
-// Individual marker component
-function ListingMarker({ listing, onNavigate }: { listing: Listing; onNavigate: (id: string) => void }) {
-  return (
-    <Marker
-      position={[listing.latitude!, listing.longitude!]}
-      icon={createPriceMarker(listing.price)}
-    >
-      <Popup>
-        <div className="w-56 p-0">
-          {listing.photos?.[0] && (
-            <img
-              src={listing.photos[0]}
-              alt={listing.title}
-              className="w-full h-28 object-cover rounded-t-lg"
-            />
-          )}
-          <div className="p-3">
-            <h3 className="font-semibold text-sm text-foreground line-clamp-1">
-              {listing.title}
-            </h3>
-            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-              {listing.location}
-            </p>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-sm font-bold text-primary">{listing.price}</span>
-              <span className="text-xs text-muted-foreground">{listing.size}</span>
-            </div>
-            <button
-              onClick={() => onNavigate(listing.id)}
-              className="w-full mt-3 text-center text-xs font-medium text-primary hover:underline"
-            >
-              View Details →
-            </button>
-          </div>
-        </div>
-      </Popup>
-    </Marker>
-  );
-}
-
 const ListingsMap = ({ listings, className }: ListingsMapProps) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
   const navigate = useNavigate();
 
   const listingsWithCoords = listings.filter((l) => l.latitude && l.longitude);
 
-  const handleNavigate = (id: string) => {
-    navigate(`/listing/${id}`);
-  };
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    // Clean up existing map
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+
+    const map = L.map(mapRef.current).setView(BARCELONA_CENTER, 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    // Add markers for each listing
+    if (listingsWithCoords.length > 0) {
+      const bounds = L.latLngBounds([]);
+      
+      listingsWithCoords.forEach((listing) => {
+        const latLng: L.LatLngExpression = [listing.latitude!, listing.longitude!];
+        bounds.extend(latLng);
+
+        // Create custom price marker
+        const priceIcon = L.divIcon({
+          className: "custom-price-marker",
+          html: `<div style="background: hsl(14 86% 58%); color: white; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.2); white-space: nowrap;">${listing.price}</div>`,
+          iconSize: [80, 30],
+          iconAnchor: [40, 30],
+        });
+
+        const marker = L.marker(latLng, { icon: priceIcon }).addTo(map);
+
+        // Create popup content
+        const popupContent = document.createElement("div");
+        popupContent.className = "w-56";
+        popupContent.innerHTML = `
+          ${listing.photos?.[0] ? `<img src="${listing.photos[0]}" alt="${listing.title}" class="w-full h-28 object-cover rounded-t-lg" />` : ""}
+          <div class="p-3">
+            <h3 class="font-semibold text-sm line-clamp-1">${listing.title}</h3>
+            <p class="text-xs text-gray-500 line-clamp-1 mt-1">${listing.location}</p>
+            <div class="flex items-center justify-between mt-2">
+              <span class="text-sm font-bold" style="color: hsl(14 86% 58%)">${listing.price}</span>
+              <span class="text-xs text-gray-500">${listing.size}</span>
+            </div>
+            <button class="w-full mt-3 text-center text-xs font-medium hover:underline" style="color: hsl(14 86% 58%)" data-listing-id="${listing.id}">
+              View Details →
+            </button>
+          </div>
+        `;
+
+        // Add click handler for the button
+        popupContent.querySelector("button")?.addEventListener("click", () => {
+          navigate(`/listing/${listing.id}`);
+        });
+
+        marker.bindPopup(popupContent);
+      });
+
+      // Fit bounds to show all markers
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+    }
+
+    mapInstanceRef.current = map;
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [listingsWithCoords, navigate]);
 
   if (listingsWithCoords.length === 0) {
     return (
@@ -123,25 +126,7 @@ const ListingsMap = ({ listings, className }: ListingsMapProps) => {
 
   return (
     <div className={`rounded-xl overflow-hidden border border-border ${className}`}>
-      <MapContainer
-        center={BARCELONA_CENTER}
-        zoom={13}
-        style={{ height: "100%", width: "100%", minHeight: "400px" }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <FitBoundsController listings={listingsWithCoords} />
-        {listingsWithCoords.map((listing) => (
-          <ListingMarker
-            key={listing.id}
-            listing={listing}
-            onNavigate={handleNavigate}
-          />
-        ))}
-      </MapContainer>
+      <div ref={mapRef} style={{ height: "100%", width: "100%", minHeight: "400px" }} />
     </div>
   );
 };
