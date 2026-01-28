@@ -1,14 +1,15 @@
 import AppLayout from "@/components/AppLayout";
 import FilterSheet, { FilterState } from "@/components/FilterSheet";
 import ListingCard from "@/components/ListingCard";
+import ListingsMap from "@/components/ListingsMap";
 import { useState } from "react";
 import { useListings } from "@/hooks/useListings";
-import { Loader2, Grid, List } from "lucide-react";
+import { Loader2, Grid, List, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Listings = () => {
   const { listings, loading } = useListings();
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
   const [filters, setFilters] = useState<FilterState>({
     minBudget: "",
     maxBudget: "",
@@ -118,6 +119,7 @@ const Listings = () => {
                 variant={viewMode === "grid" ? "default" : "outline"}
                 size="icon"
                 onClick={() => setViewMode("grid")}
+                title="Grid view"
               >
                 <Grid className="w-4 h-4" />
               </Button>
@@ -125,8 +127,17 @@ const Listings = () => {
                 variant={viewMode === "list" ? "default" : "outline"}
                 size="icon"
                 onClick={() => setViewMode("list")}
+                title="List view"
               >
                 <List className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === "map" ? "default" : "outline"}
+                size="icon"
+                onClick={() => setViewMode("map")}
+                title="Map view"
+              >
+                <Map className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -135,50 +146,51 @@ const Listings = () => {
 
       {/* Main Content */}
       <div className="p-8">
-        {/* Map placeholder */}
-        <div className="mb-8">
-          <div className="aspect-[21/9] w-full rounded-xl bg-muted border border-border flex items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <div className="text-5xl mb-3">🗺️</div>
-              <p className="text-lg font-medium">Map View</p>
-              <p className="text-sm">Coming soon</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Listings */}
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          </div>
-        ) : filteredListings.length > 0 ? (
-          <div
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"
-                : "space-y-4 max-w-3xl"
-            }
-          >
-            {filteredListings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                id={listing.id}
-                image={listing.photos?.[0] || "/placeholder.svg"}
-                title={listing.title}
-                price={listing.price}
-                location={listing.location}
-                size={listing.size}
-                description={listing.description || ""}
-                stayType={listing.stay_type || undefined}
-              />
-            ))}
-          </div>
+        {/* Map View */}
+        {viewMode === "map" ? (
+          <ListingsMap listings={filteredListings} className="h-[calc(100vh-200px)]" />
         ) : (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">🏠</div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">No listings found</h3>
-            <p className="text-muted-foreground">Try adjusting your filters to see more results</p>
-          </div>
+          <>
+            {/* Mini Map */}
+            <div className="mb-8">
+              <ListingsMap listings={filteredListings} className="h-[300px]" />
+            </div>
+
+            {/* Listings */}
+            {loading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+              </div>
+            ) : filteredListings.length > 0 ? (
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"
+                    : "space-y-4 max-w-3xl"
+                }
+              >
+                {filteredListings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    id={listing.id}
+                    image={listing.photos?.[0] || "/placeholder.svg"}
+                    title={listing.title}
+                    price={listing.price}
+                    location={listing.location}
+                    size={listing.size}
+                    description={listing.description || ""}
+                    stayType={listing.stay_type || undefined}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🏠</div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">No listings found</h3>
+                <p className="text-muted-foreground">Try adjusting your filters to see more results</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </AppLayout>

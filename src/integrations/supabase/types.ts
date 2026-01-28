@@ -60,7 +60,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          latitude: number | null
           location: string
+          longitude: number | null
           neighborhood: string | null
           photos: string[] | null
           price: string
@@ -75,7 +77,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          latitude?: number | null
           location: string
+          longitude?: number | null
           neighborhood?: string | null
           photos?: string[] | null
           price: string
@@ -90,7 +94,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           neighborhood?: string | null
           photos?: string[] | null
           price?: string

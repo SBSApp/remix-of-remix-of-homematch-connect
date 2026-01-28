@@ -16,6 +16,8 @@ export interface Listing {
   photos: string[] | null;
   created_at: string;
   updated_at: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export const useListings = () => {
