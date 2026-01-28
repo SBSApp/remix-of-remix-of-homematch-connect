@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -34,7 +34,8 @@ interface SearchResult {
   display_name: string;
 }
 
-const MapClickHandler = ({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) => {
+// Component to handle map clicks
+function MapClickHandler({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
   useMapEvents({
     click: (e) => {
       const { lat, lng } = e.latlng;
@@ -50,15 +51,18 @@ const MapClickHandler = ({ onLocationSelect }: { onLocationSelect: (lat: number,
     },
   });
   return null;
-};
+}
 
-const MapCenterHandler = ({ center }: { center: [number, number] }) => {
+// Component to handle map center changes
+function MapCenterController({ center }: { center: [number, number] }) {
   const map = useMap();
+  
   useEffect(() => {
     map.setView(center, 15);
   }, [center, map]);
+  
   return null;
-};
+}
 
 const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -113,7 +117,7 @@ const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
     onChange({ lat, lng, address: result.display_name });
   };
 
-  const handleMapClick = async (lat: number, lng: number) => {
+  const handleMapClick = useCallback(async (lat: number, lng: number) => {
     setMarkerPosition([lat, lng]);
     
     // Reverse geocode to get address
@@ -130,7 +134,7 @@ const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
       setSearchQuery(address);
       onChange({ lat, lng, address });
     }
-  };
+  }, [onChange]);
 
   return (
     <div className="space-y-3">
@@ -182,7 +186,7 @@ const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <MapClickHandler onLocationSelect={handleMapClick} />
-          <MapCenterHandler center={mapCenter} />
+          <MapCenterController center={mapCenter} />
           {markerPosition && <Marker position={markerPosition} />}
         </MapContainer>
       </div>

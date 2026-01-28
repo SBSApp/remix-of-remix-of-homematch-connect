@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useNavigate } from "react-router-dom";
-import { Heart, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 // Fix for default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -43,7 +43,8 @@ interface ListingsMapProps {
   className?: string;
 }
 
-const FitBounds = ({ listings }: { listings: Listing[] }) => {
+// Component to fit bounds
+function FitBoundsController({ listings }: { listings: Listing[] }) {
   const map = useMap();
 
   useEffect(() => {
@@ -57,13 +58,56 @@ const FitBounds = ({ listings }: { listings: Listing[] }) => {
   }, [listings, map]);
 
   return null;
-};
+}
+
+// Individual marker component
+function ListingMarker({ listing, onNavigate }: { listing: Listing; onNavigate: (id: string) => void }) {
+  return (
+    <Marker
+      position={[listing.latitude!, listing.longitude!]}
+      icon={createPriceMarker(listing.price)}
+    >
+      <Popup>
+        <div className="w-56 p-0">
+          {listing.photos?.[0] && (
+            <img
+              src={listing.photos[0]}
+              alt={listing.title}
+              className="w-full h-28 object-cover rounded-t-lg"
+            />
+          )}
+          <div className="p-3">
+            <h3 className="font-semibold text-sm text-foreground line-clamp-1">
+              {listing.title}
+            </h3>
+            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+              {listing.location}
+            </p>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-sm font-bold text-primary">{listing.price}</span>
+              <span className="text-xs text-muted-foreground">{listing.size}</span>
+            </div>
+            <button
+              onClick={() => onNavigate(listing.id)}
+              className="w-full mt-3 text-center text-xs font-medium text-primary hover:underline"
+            >
+              View Details →
+            </button>
+          </div>
+        </div>
+      </Popup>
+    </Marker>
+  );
+}
 
 const ListingsMap = ({ listings, className }: ListingsMapProps) => {
   const navigate = useNavigate();
-  const [activePopup, setActivePopup] = useState<string | null>(null);
 
   const listingsWithCoords = listings.filter((l) => l.latitude && l.longitude);
+
+  const handleNavigate = (id: string) => {
+    navigate(`/listing/${id}`);
+  };
 
   if (listingsWithCoords.length === 0) {
     return (
@@ -89,47 +133,13 @@ const ListingsMap = ({ listings, className }: ListingsMapProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <FitBounds listings={listingsWithCoords} />
-        
+        <FitBoundsController listings={listingsWithCoords} />
         {listingsWithCoords.map((listing) => (
-          <Marker
+          <ListingMarker
             key={listing.id}
-            position={[listing.latitude!, listing.longitude!]}
-            icon={createPriceMarker(listing.price)}
-            eventHandlers={{
-              click: () => setActivePopup(listing.id),
-            }}
-          >
-            <Popup>
-              <div className="w-56 p-0">
-                {listing.photos?.[0] && (
-                  <img
-                    src={listing.photos[0]}
-                    alt={listing.title}
-                    className="w-full h-28 object-cover rounded-t-lg"
-                  />
-                )}
-                <div className="p-3">
-                  <h3 className="font-semibold text-sm text-foreground line-clamp-1">
-                    {listing.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-                    {listing.location}
-                  </p>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-sm font-bold text-primary">{listing.price}</span>
-                    <span className="text-xs text-muted-foreground">{listing.size}</span>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/listing/${listing.id}`)}
-                    className="w-full mt-3 text-center text-xs font-medium text-primary hover:underline"
-                  >
-                    View Details →
-                  </button>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
+            listing={listing}
+            onNavigate={handleNavigate}
+          />
         ))}
       </MapContainer>
     </div>
