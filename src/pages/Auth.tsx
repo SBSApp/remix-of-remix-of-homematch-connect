@@ -31,11 +31,11 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session?.user && event === "SIGNED_IN") {
-          // Check if user needs onboarding - defer this call
+          // Check if user needs onboarding or terms - defer this call
           setTimeout(async () => {
             const { data: profile } = await supabase
               .from("profiles")
-              .select("onboarding_completed")
+              .select("onboarding_completed, terms_accepted")
               .eq("user_id", session.user.id)
               .maybeSingle();
 
@@ -49,6 +49,8 @@ const Auth = () => {
               navigate("/student-onboarding");
             } else if (!profile?.onboarding_completed && roleData?.role === "agent") {
               navigate("/agent-onboarding");
+            } else if (!profile?.terms_accepted) {
+              navigate("/terms");
             } else if (roleData?.role === "agent") {
               navigate("/leads");
             } else if (roleData?.role === "student") {
@@ -63,11 +65,11 @@ const Auth = () => {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        // User already logged in, redirect based on role and onboarding status
+        // User already logged in, redirect based on role, onboarding, and terms status
         setTimeout(async () => {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("onboarding_completed")
+            .select("onboarding_completed, terms_accepted")
             .eq("user_id", session.user.id)
             .maybeSingle();
 
@@ -81,6 +83,8 @@ const Auth = () => {
             navigate("/student-onboarding");
           } else if (!profile?.onboarding_completed && roleData?.role === "agent") {
             navigate("/agent-onboarding");
+          } else if (!profile?.terms_accepted) {
+            navigate("/terms");
           } else if (roleData?.role === "agent") {
             navigate("/leads");
           } else if (roleData?.role === "student") {

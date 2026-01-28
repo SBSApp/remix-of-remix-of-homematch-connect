@@ -171,7 +171,7 @@ const StudentOnboarding = () => {
       }
 
       toast.success("Profile created successfully!");
-      navigate("/listings");
+      navigate("/terms");
     } catch (error) {
       console.error("Error saving profile:", error);
       toast.error("Failed to save profile");

@@ -124,6 +124,8 @@ export type Database = {
           profile_photo_url: string | null
           real_estate_group: string | null
           role: string
+          terms_accepted: boolean | null
+          terms_accepted_at: string | null
           updated_at: string | null
           user_id: string
         }
@@ -141,6 +143,8 @@ export type Database = {
           profile_photo_url?: string | null
           real_estate_group?: string | null
           role?: string
+          terms_accepted?: boolean | null
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -158,6 +162,8 @@ export type Database = {
           profile_photo_url?: string | null
           real_estate_group?: string | null
           role?: string
+          terms_accepted?: boolean | null
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id?: string
         }

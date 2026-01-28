@@ -146,7 +146,7 @@ const AgentOnboarding = () => {
       }
 
       toast.success("Profile created successfully!");
-      navigate("/leads");
+      navigate("/terms");
     } catch (error) {
       console.error("Error saving profile:", error);
       toast.error("Failed to save profile");
