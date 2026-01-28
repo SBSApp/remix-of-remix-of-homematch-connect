@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Input } from "@/components/ui/input";
@@ -15,7 +14,7 @@ L.Icon.Default.mergeOptions({
 });
 
 // Barcelona center coordinates
-const BARCELONA_CENTER: [number, number] = [41.3851, 2.1734];
+const BARCELONA_CENTER: L.LatLngExpression = [41.3851, 2.1734];
 const BARCELONA_BOUNDS = {
   north: 41.47,
   south: 41.32,
@@ -34,11 +33,39 @@ interface SearchResult {
   display_name: string;
 }
 
-// Component to handle map clicks
-function MapClickHandler({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
-  useMapEvents({
-    click: (e) => {
+const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return;
+
+    const map = L.map(mapRef.current).setView(
+      value ? [value.lat, value.lng] : BARCELONA_CENTER,
+      13
+    );
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    // Add initial marker if value exists
+    if (value) {
+      markerRef.current = L.marker([value.lat, value.lng]).addTo(map);
+    }
+
+    // Handle map clicks
+    map.on("click", async (e) => {
       const { lat, lng } = e.latlng;
+      
       // Check if click is within Barcelona bounds
       if (
         lat >= BARCELONA_BOUNDS.south &&
@@ -46,37 +73,40 @@ function MapClickHandler({ onLocationSelect }: { onLocationSelect: (lat: number,
         lng >= BARCELONA_BOUNDS.west &&
         lng <= BARCELONA_BOUNDS.east
       ) {
-        onLocationSelect(lat, lng);
+        // Update or create marker
+        if (markerRef.current) {
+          markerRef.current.setLatLng([lat, lng]);
+        } else {
+          markerRef.current = L.marker([lat, lng]).addTo(map);
+        }
+
+        // Reverse geocode to get address
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+          );
+          const data = await response.json();
+          const address = data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          setSearchQuery(address);
+          onChange({ lat, lng, address });
+        } catch {
+          const address = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          setSearchQuery(address);
+          onChange({ lat, lng, address });
+        }
       }
-    },
-  });
-  return null;
-}
+    });
 
-// Component to handle map center changes
-function MapCenterController({ center }: { center: [number, number] }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    map.setView(center, 15);
-  }, [center, map]);
-  
-  return null;
-}
+    mapInstanceRef.current = map;
 
-const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searching, setSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(
-    value ? [value.lat, value.lng] : null
-  );
-  const [mapCenter, setMapCenter] = useState<[number, number]>(
-    value ? [value.lat, value.lng] : BARCELONA_CENTER
-  );
-  const searchRef = useRef<HTMLDivElement>(null);
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+      markerRef.current = null;
+    };
+  }, []);
 
+  // Handle click outside search results
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -110,31 +140,21 @@ const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
   const handleResultSelect = (result: SearchResult) => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
-    setMarkerPosition([lat, lng]);
-    setMapCenter([lat, lng]);
+    
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setView([lat, lng], 15);
+      
+      if (markerRef.current) {
+        markerRef.current.setLatLng([lat, lng]);
+      } else {
+        markerRef.current = L.marker([lat, lng]).addTo(mapInstanceRef.current);
+      }
+    }
+    
     setSearchQuery(result.display_name);
     setShowResults(false);
     onChange({ lat, lng, address: result.display_name });
   };
-
-  const handleMapClick = useCallback(async (lat: number, lng: number) => {
-    setMarkerPosition([lat, lng]);
-    
-    // Reverse geocode to get address
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-      );
-      const data = await response.json();
-      const address = data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-      setSearchQuery(address);
-      onChange({ lat, lng, address });
-    } catch {
-      const address = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-      setSearchQuery(address);
-      onChange({ lat, lng, address });
-    }
-  }, [onChange]);
 
   return (
     <div className="space-y-3">
@@ -174,22 +194,10 @@ const LocationPicker = ({ value, onChange }: LocationPickerProps) => {
       </div>
 
       {/* Map */}
-      <div className="h-[300px] rounded-lg overflow-hidden border border-border">
-        <MapContainer
-          center={mapCenter}
-          zoom={13}
-          style={{ height: "100%", width: "100%" }}
-          scrollWheelZoom={true}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <MapClickHandler onLocationSelect={handleMapClick} />
-          <MapCenterController center={mapCenter} />
-          {markerPosition && <Marker position={markerPosition} />}
-        </MapContainer>
-      </div>
+      <div 
+        ref={mapRef} 
+        className="h-[300px] rounded-lg overflow-hidden border border-border z-0"
+      />
 
       <p className="text-xs text-muted-foreground">
         Click on the map or search for an address to set the property location
