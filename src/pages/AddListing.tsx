@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import LocationPicker from "@/components/LocationPicker";
 
 const amenitiesList = [
   "Bills Included",
@@ -34,6 +35,7 @@ const AddListing = () => {
   const [price, setPrice] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
   const toggleAmenity = (amenity: string) => {
     setSelectedAmenities((prev) =>
@@ -59,6 +61,11 @@ const AddListing = () => {
   const handleSubmit = async () => {
     if (!title || !description || !location || !size || !neighborhood || !rentalType || !price) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (!coordinates) {
+      toast.error("Please select a location on the map");
       return;
     }
 
@@ -104,6 +111,8 @@ const AddListing = () => {
         stay_type: rentalType,
         amenities: selectedAmenities,
         photos: uploadedPhotoUrls,
+        latitude: coordinates?.lat,
+        longitude: coordinates?.lng,
       });
 
       if (error) {
@@ -194,14 +203,40 @@ const AddListing = () => {
 
             {/* Right Column */}
             <div className="space-y-6">
-              {/* Location */}
+              {/* Location Picker */}
               <div className="space-y-2">
-                <Label htmlFor="location">Location *</Label>
+                <Label>Property Location in Barcelona *</Label>
+                <LocationPicker
+                  value={coordinates ? { ...coordinates, address: location } : undefined}
+                  onChange={(loc) => {
+                    setCoordinates({ lat: loc.lat, lng: loc.lng });
+                    // Extract neighborhood from address if possible
+                    const parts = loc.address.split(", ");
+                    if (parts.length > 1) {
+                      setLocation(parts.slice(0, 2).join(", "));
+                      const neighborhoodPart = parts.find(p => 
+                        p.includes("Barri") || p.includes("Eixample") || p.includes("Gràcia") || 
+                        p.includes("Sarrià") || p.includes("Sants") || p.includes("Sant")
+                      );
+                      if (neighborhoodPart) {
+                        setNeighborhood(neighborhoodPart);
+                      }
+                    } else {
+                      setLocation(loc.address);
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Location Display */}
+              <div className="space-y-2">
+                <Label htmlFor="location">Address</Label>
                 <Input
                   id="location"
-                  placeholder="e.g. 123 Main Street, Amsterdam"
+                  placeholder="Selected from map above"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  readOnly
                 />
               </div>
 
@@ -210,7 +245,7 @@ const AddListing = () => {
                 <Label htmlFor="neighborhood">Neighborhood *</Label>
                 <Input
                   id="neighborhood"
-                  placeholder="e.g. Jordaan, Amsterdam"
+                  placeholder="e.g. Eixample, Gràcia"
                   value={neighborhood}
                   onChange={(e) => setNeighborhood(e.target.value)}
                 />

@@ -92,4 +92,32 @@ All colors MUST be HSL.
   }
 }
 
+/* Leaflet custom marker styles */
+.custom-price-marker {
+  background: transparent;
+  border: none;
+}
+
+.custom-price-marker > div {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  transform: translateX(-50%);
+}
+
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+}
+
+.leaflet-popup-close-button {
+  top: 8px !important;
+  right: 8px !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
