@@ -72,28 +72,63 @@ const ListingsMap = ({ listings, className }: ListingsMapProps) => {
 
         const marker = L.marker(latLng, { icon: priceIcon }).addTo(map);
 
-        // Create popup content
+        // Create popup content safely using DOM methods to prevent XSS
         const popupContent = document.createElement("div");
         popupContent.className = "w-56";
-        popupContent.innerHTML = `
-          ${listing.photos?.[0] ? `<img src="${listing.photos[0]}" alt="${listing.title}" class="w-full h-28 object-cover rounded-t-lg" />` : ""}
-          <div class="p-3">
-            <h3 class="font-semibold text-sm line-clamp-1">${listing.title}</h3>
-            <p class="text-xs text-gray-500 line-clamp-1 mt-1">${listing.location}</p>
-            <div class="flex items-center justify-between mt-2">
-              <span class="text-sm font-bold" style="color: hsl(14 86% 58%)">${listing.price}</span>
-              <span class="text-xs text-gray-500">${listing.size}</span>
-            </div>
-            <button class="w-full mt-3 text-center text-xs font-medium hover:underline" style="color: hsl(14 86% 58%)" data-listing-id="${listing.id}">
-              View Details →
-            </button>
-          </div>
-        `;
 
-        // Add click handler for the button
-        popupContent.querySelector("button")?.addEventListener("click", () => {
+        // Add image if available
+        if (listing.photos?.[0]) {
+          const img = document.createElement("img");
+          img.src = listing.photos[0];
+          img.alt = listing.title || "Property image";
+          img.className = "w-full h-28 object-cover rounded-t-lg";
+          popupContent.appendChild(img);
+        }
+
+        // Create content container
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "p-3";
+
+        // Title - using textContent to prevent XSS
+        const title = document.createElement("h3");
+        title.className = "font-semibold text-sm line-clamp-1";
+        title.textContent = listing.title;
+        contentDiv.appendChild(title);
+
+        // Location - using textContent to prevent XSS
+        const location = document.createElement("p");
+        location.className = "text-xs text-gray-500 line-clamp-1 mt-1";
+        location.textContent = listing.location;
+        contentDiv.appendChild(location);
+
+        // Price and size container
+        const priceContainer = document.createElement("div");
+        priceContainer.className = "flex items-center justify-between mt-2";
+
+        const price = document.createElement("span");
+        price.className = "text-sm font-bold";
+        price.style.color = "hsl(14 86% 58%)";
+        price.textContent = listing.price;
+        priceContainer.appendChild(price);
+
+        const size = document.createElement("span");
+        size.className = "text-xs text-gray-500";
+        size.textContent = listing.size;
+        priceContainer.appendChild(size);
+
+        contentDiv.appendChild(priceContainer);
+
+        // View details button
+        const button = document.createElement("button");
+        button.className = "w-full mt-3 text-center text-xs font-medium hover:underline";
+        button.style.color = "hsl(14 86% 58%)";
+        button.textContent = "View Details →";
+        button.addEventListener("click", () => {
           navigate(`/listing/${listing.id}`);
         });
+        contentDiv.appendChild(button);
+
+        popupContent.appendChild(contentDiv);
 
         marker.bindPopup(popupContent);
       });
