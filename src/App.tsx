@@ -19,6 +19,7 @@ import ListingDetail from "./pages/ListingDetail";
 import Auth from "./pages/Auth";
 import StudentOnboarding from "./pages/StudentOnboarding";
 import AgentOnboarding from "./pages/AgentOnboarding";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const AppRoutes = () => {
       <Route path="/auth" element={<Auth />} />
       <Route path="/student-onboarding" element={<StudentOnboarding />} />
       <Route path="/agent-onboarding" element={<AgentOnboarding />} />
+      <Route path="/terms" element={<TermsOfService />} />
       <Route path="/listings" element={<Listings />} />
       <Route path="/listing/:id" element={<ListingDetail />} />
       <Route path="/leads" element={<Leads />} />
