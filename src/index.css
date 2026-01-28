@@ -120,4 +120,16 @@ All colors MUST be HSL.
   color: hsl(var(--muted-foreground)) !important;
 }
 
+/* Ensure Leaflet map stays below modals/sheets */
+.leaflet-pane,
+.leaflet-control,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 20 !important;
+}
+
+.leaflet-popup-pane {
+  z-index: 25 !important;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
