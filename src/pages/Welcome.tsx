@@ -14,7 +14,7 @@ const Welcome = () => {
     },
     {
       icon: Ban,
-      value: "0",
+      value: "No",
       label: "Scams or Fakes",
       color: "text-red-500",
       bgColor: "bg-red-500/10",
