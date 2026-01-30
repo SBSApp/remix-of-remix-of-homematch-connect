@@ -29,9 +29,9 @@ const Welcome = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex justify-center">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary/10 via-accent/20 to-primary/5 items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex flex-1 max-w-2xl bg-gradient-to-br from-primary/10 via-accent/20 to-primary/5 items-center justify-center p-12 relative overflow-hidden">
         {/* Decorative background elements */}
         <div className="absolute top-20 left-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
@@ -64,7 +64,7 @@ const Welcome = () => {
       </div>
 
       {/* Right side - Selection */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 max-w-xl flex items-center justify-center p-8">
         <div className="w-full max-w-md mx-auto text-center">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
