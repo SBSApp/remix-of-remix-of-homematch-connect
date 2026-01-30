@@ -99,12 +99,12 @@ const Welcome = () => {
             <div className="space-y-4">
               <button
                 onClick={() => navigate("/auth?role=student")}
-                className="w-full bg-gradient-to-r from-primary/10 to-accent/30 hover:from-primary/20 hover:to-accent/40 border border-border rounded-xl p-6 transition-all flex items-center gap-4 group"
+                className="w-full bg-gradient-to-r from-primary/10 to-accent/30 hover:from-primary/20 hover:to-accent/40 border border-border rounded-xl p-6 transition-all flex flex-col items-center justify-center gap-3 group"
               >
                 <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                   <GraduationCap className="w-7 h-7 text-primary" />
                 </div>
-                <div className="text-left flex-1">
+                <div className="text-center">
                   <span className="text-lg font-semibold text-card-foreground block">
                     I'm a Student
                   </span>
@@ -116,12 +116,12 @@ const Welcome = () => {
 
               <button
                 onClick={() => navigate("/auth?role=agent")}
-                className="w-full bg-gradient-to-r from-secondary to-muted hover:from-secondary/80 hover:to-muted/80 border border-border rounded-xl p-6 transition-all flex items-center gap-4 group"
+                className="w-full bg-gradient-to-r from-secondary to-muted hover:from-secondary/80 hover:to-muted/80 border border-border rounded-xl p-6 transition-all flex flex-col items-center justify-center gap-3 group"
               >
                 <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                   <UserCheck className="w-7 h-7 text-primary" />
                 </div>
-                <div className="text-left flex-1">
+                <div className="text-center">
                   <span className="text-lg font-semibold text-card-foreground block">
                     I'm an Agent
                   </span>
