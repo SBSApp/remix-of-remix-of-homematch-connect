@@ -135,14 +135,14 @@ const AddListing = () => {
     <AppLayout userType="agent">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-30">
-        <div className="px-8 py-6">
-          <h1 className="text-3xl font-bold text-foreground">Add New Listing</h1>
-          <p className="text-muted-foreground mt-1">Create a new property listing</p>
+        <div className="px-4 py-4 lg:px-8 lg:py-6">
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Add New Listing</h1>
+          <p className="text-muted-foreground mt-1 text-sm lg:text-base">Create a new property listing</p>
         </div>
       </div>
 
-      <div className="p-8 max-w-4xl">
-        <div className="bg-card rounded-xl shadow-card p-8">
+      <div className="p-4 lg:p-8 max-w-4xl">
+        <div className="bg-card rounded-xl shadow-card p-4 lg:p-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column */}
             <div className="space-y-6">

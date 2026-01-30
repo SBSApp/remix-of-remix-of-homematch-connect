@@ -101,59 +101,64 @@ const Listings = () => {
     <AppLayout userType="student">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-30">
-        <div className="px-8 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Browse Listings</h1>
-            <p className="text-muted-foreground mt-1">
-              {filteredListings.length} properties available
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <FilterSheet
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              onClearFilters={handleClearFilters}
-            />
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("grid")}
-                title="Grid view"
-              >
-                <Grid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("list")}
-                title="List view"
-              >
-                <List className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === "map" ? "default" : "outline"}
-                size="icon"
-                onClick={() => setViewMode("map")}
-                title="Map view"
-              >
-                <Map className="w-4 h-4" />
-              </Button>
+        <div className="px-4 py-4 lg:px-8 lg:py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Browse Listings</h1>
+              <p className="text-muted-foreground mt-1 text-sm lg:text-base">
+                {filteredListings.length} properties available
+              </p>
+            </div>
+            <div className="flex items-center gap-3 lg:gap-4">
+              <FilterSheet
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                onClearFilters={handleClearFilters}
+              />
+              <div className="flex items-center gap-1 lg:gap-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode("grid")}
+                  title="Grid view"
+                  className="h-9 w-9 lg:h-10 lg:w-10"
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode("list")}
+                  title="List view"
+                  className="h-9 w-9 lg:h-10 lg:w-10"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "map" ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setViewMode("map")}
+                  title="Map view"
+                  className="h-9 w-9 lg:h-10 lg:w-10"
+                >
+                  <Map className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="p-8">
+      <div className="p-4 lg:p-8">
         {/* Map View */}
         {viewMode === "map" ? (
           <ListingsMap listings={filteredListings} className="h-[calc(100vh-200px)]" />
         ) : (
           <>
-            {/* Mini Map */}
-            <div className="mb-8">
-              <ListingsMap listings={filteredListings} className="h-[300px]" />
+            {/* Mini Map - hidden on mobile in grid/list view for cleaner UX */}
+            <div className="mb-6 lg:mb-8 hidden sm:block">
+              <ListingsMap listings={filteredListings} className="h-[250px] lg:h-[300px]" />
             </div>
 
             {/* Listings */}

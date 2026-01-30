@@ -63,50 +63,54 @@ const Leads = () => {
     <AppLayout userType="agent">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-30">
-        <div className="px-8 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Leads</h1>
-            <p className="text-muted-foreground mt-1">
-              {filteredLeads.length} interested students
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowListingDialog(true)}
-              className="gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              By Listing
-              {selectedListings.length > 0 && (
-                <Badge variant="default" className="ml-1">
-                  {selectedListings.length}
-                </Badge>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowDocumentDialog(true)}
-              className="gap-2"
-            >
-              <FileText className="w-4 h-4" />
-              By Documents
-              {selectedDocuments.length > 0 && (
-                <Badge variant="default" className="ml-1">
-                  {selectedDocuments.length}
-                </Badge>
-              )}
-            </Button>
-            {activeFilterCount > 0 && (
-              <Button variant="ghost" onClick={handleClearFilters}>
-                Clear All
+        <div className="px-4 py-4 lg:px-8 lg:py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Leads</h1>
+              <p className="text-muted-foreground mt-1 text-sm lg:text-base">
+                {filteredLeads.length} interested students
+              </p>
+            </div>
+            <div className="flex items-center gap-2 lg:gap-3 flex-wrap">
+              <Button
+                variant="outline"
+                onClick={() => setShowListingDialog(true)}
+                className="gap-2 text-sm"
+                size="sm"
+              >
+                <Filter className="w-4 h-4" />
+                <span className="hidden sm:inline">By</span> Listing
+                {selectedListings.length > 0 && (
+                  <Badge variant="default" className="ml-1">
+                    {selectedListings.length}
+                  </Badge>
+                )}
               </Button>
-            )}
+              <Button
+                variant="outline"
+                onClick={() => setShowDocumentDialog(true)}
+                className="gap-2 text-sm"
+                size="sm"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="hidden sm:inline">By</span> Documents
+                {selectedDocuments.length > 0 && (
+                  <Badge variant="default" className="ml-1">
+                    {selectedDocuments.length}
+                  </Badge>
+                )}
+              </Button>
+              {activeFilterCount > 0 && (
+                <Button variant="ghost" onClick={handleClearFilters} size="sm">
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="p-8">
+      <div className="p-4 lg:p-8">
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />

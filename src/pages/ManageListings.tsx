@@ -35,21 +35,23 @@ const ManageListings = () => {
     <AppLayout userType="agent">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-30">
-        <div className="px-8 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">My Listings</h1>
-            <p className="text-muted-foreground mt-1">
-              {listings.length} properties
-            </p>
+        <div className="px-4 py-4 lg:px-8 lg:py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-foreground">My Listings</h1>
+              <p className="text-muted-foreground mt-1 text-sm lg:text-base">
+                {listings.length} properties
+              </p>
+            </div>
+            <Button className="gap-2 w-full sm:w-auto" onClick={() => navigate("/add-listing")}>
+              <Plus className="w-4 h-4" />
+              Add New Listing
+            </Button>
           </div>
-          <Button className="gap-2" onClick={() => navigate("/add-listing")}>
-            <Plus className="w-4 h-4" />
-            Add New Listing
-          </Button>
         </div>
       </div>
 
-      <div className="p-8">
+      <div className="p-4 lg:p-8">
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
