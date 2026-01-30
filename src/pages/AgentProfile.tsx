@@ -170,13 +170,13 @@ const AgentProfile = () => {
     <AppLayout userType="agent">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-30">
-        <div className="px-8 py-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
+        <div className="px-4 py-4 lg:px-8 lg:py-6 flex items-center justify-between">
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">My Profile</h1>
           {isEditing ? (
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="gap-1.5" onClick={handleCancel} disabled={saving}>
                 <X className="w-3.5 h-3.5" />
-                Cancel
+                <span className="hidden sm:inline">Cancel</span>
               </Button>
               <Button size="sm" className="gap-1.5" onClick={handleSave} disabled={saving}>
                 <Check className="w-3.5 h-3.5" />
@@ -186,13 +186,13 @@ const AgentProfile = () => {
           ) : (
             <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
               <Pencil className="w-3.5 h-3.5" />
-              Edit
+              <span className="hidden sm:inline">Edit</span>
             </Button>
           )}
         </div>
       </div>
 
-      <div className="p-8 max-w-4xl">
+      <div className="p-4 lg:p-8 max-w-4xl">
         {/* Profile Header */}
         <div className="bg-card rounded-xl shadow-card p-6 mb-4">
           <div className="flex gap-4 items-start">

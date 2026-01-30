@@ -162,16 +162,16 @@ const ListingDetail = () => {
     <AppLayout userType="student">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-30">
-        <div className="px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <div className="px-4 py-3 lg:px-8 lg:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 lg:gap-4 min-w-0">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="flex-shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="w-4 h-4" />
-                <span>{listing.location}</span>
+            <div className="min-w-0">
+              <h1 className="text-lg lg:text-2xl font-bold text-foreground truncate">{listing.title}</h1>
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">{listing.location}</span>
               </div>
             </div>
           </div>
@@ -179,7 +179,7 @@ const ListingDetail = () => {
             variant="ghost"
             size="icon"
             onClick={handleHeartClick}
-            className="h-10 w-10"
+            className="h-10 w-10 flex-shrink-0"
           >
             <Heart
               className={`w-6 h-6 ${isListingSaved ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
@@ -189,7 +189,7 @@ const ListingDetail = () => {
       </div>
 
       {/* Main Content */}
-      <div className="p-8">
+      <div className="p-4 lg:p-8">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Left Column - Photos & Details */}
           <div className="xl:col-span-2 space-y-6">

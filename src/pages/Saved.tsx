@@ -10,15 +10,15 @@ const Saved = () => {
     <AppLayout userType="student">
       {/* Header */}
       <div className="bg-card border-b border-border sticky top-0 z-30">
-        <div className="px-8 py-6">
-          <h1 className="text-3xl font-bold text-foreground">Saved Listings</h1>
-          <p className="text-muted-foreground mt-1">
+        <div className="px-4 py-4 lg:px-8 lg:py-6">
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Saved Listings</h1>
+          <p className="text-muted-foreground mt-1 text-sm lg:text-base">
             {savedListings.length} saved properties
           </p>
         </div>
       </div>
 
-      <div className="p-8">
+      <div className="p-4 lg:p-8">
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
