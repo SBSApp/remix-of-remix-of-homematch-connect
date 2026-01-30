@@ -65,7 +65,7 @@ const Welcome = () => {
 
       {/* Right side - Selection */}
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md mx-auto text-center">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <h1 className="text-4xl font-bold text-primary">Fidii - Housing</h1>
