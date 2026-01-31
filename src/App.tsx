@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import AgentProfile from "./pages/AgentProfile";
 import Saved from "./pages/Saved";
 import AddListing from "./pages/AddListing";
+import EditListing from "./pages/EditListing";
 import ManageListings from "./pages/ManageListings";
 import FAQs from "./pages/FAQs";
 import NotFound from "./pages/NotFound";
@@ -49,6 +50,7 @@ const AppRoutes = () => {
       <Route path="/agent-profile" element={<AgentProfile />} />
       <Route path="/saved" element={<Saved />} />
       <Route path="/add-listing" element={<AddListing />} />
+      <Route path="/edit-listing/:id" element={<EditListing />} />
       <Route path="/manage-listings" element={<ManageListings />} />
       <Route path="/faqs" element={<FAQs />} />
       <Route path="*" element={<NotFound />} />
