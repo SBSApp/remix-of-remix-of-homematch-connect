@@ -28,7 +28,7 @@ const ManageListings = () => {
   };
 
   const handleEdit = (id: string) => {
-    toast.info("Edit functionality coming soon");
+    navigate(`/edit-listing/${id}`);
   };
 
   return (
