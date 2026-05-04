@@ -51,6 +51,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "leads_student_profile_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_lead_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       listings: {
@@ -111,6 +118,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "listings_agent_profile_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "student_lead_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -254,7 +268,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      student_lead_profiles: {
+        Row: {
+          bio: string | null
+          documents_ready: string[] | null
+          field_of_study: string | null
+          languages: string[] | null
+          name: string | null
+          profile_photo_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bio?: string | null
+          documents_ready?: string[] | null
+          field_of_study?: string | null
+          languages?: string[] | null
+          name?: string | null
+          profile_photo_url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bio?: string | null
+          documents_ready?: string[] | null
+          field_of_study?: string | null
+          languages?: string[] | null
+          name?: string | null
+          profile_photo_url?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
